@@ -34,6 +34,7 @@ public class TwoFourTree
     public boolean isEmpty() {
         return (size == 0);
     }
+    // This is Emmanuel Code
 
     /**
      * Searches dictionary to determine if key is present
