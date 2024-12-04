@@ -238,7 +238,7 @@ public class TwoFourTree
 
     }
     
-    // Find First Greater Than Or Equal
+    // Find First Greater Than Or Equal (Check if accurate)
     private int FFGTE(TFNode node, Object key) {
         int i;
         for (i = 0; i < node.getNumItems(); i++) {
