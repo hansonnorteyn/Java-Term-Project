@@ -43,26 +43,11 @@ public class TwoFourTree
      * @return object corresponding to key; null if not found
      */
     public Object findElement(Object key) {
-        // Begin searching at root
-        TFNode currNode = root();
-        int index;
+        // Find the node that is storing the key
+        TFNode node = search(root(),key);
         
-        // Search while the current node has children
-        while (currNode.getNumItems() > 0) {
-            index = FFGTE(currNode, key);
-            
-            // If the key and the key at item index are equal, 
-            // then return the key's element.
-            // Short circuit: if index is 3, no need to compare (slide 9)
-            if (index != 3 && treeComp.isEqual(key, currNode.getItem(index))) {
-                return currNode.getItem(index).element();
-            }
-            
-            // Otherwise, check the child
-            currNode = currNode.getChild(index);
-        }        
-        
-        return null;
+        // Return the element from the Item in the node
+        return node.getItem(FFGTE(node, key)).element();
     }
 
     /**
@@ -278,6 +263,7 @@ public class TwoFourTree
         return -1;
     }
     
+    // Returns the node at which the desired key is stored
     private TFNode search(TFNode searchMe, Object findKey) {   
         // SearchMe and know me, O God
         int index = FFGTE(searchMe, findKey);
