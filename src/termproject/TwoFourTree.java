@@ -76,7 +76,10 @@ public class TwoFourTree
             // Insert
             index = FFGTE(insertAtNode, key);        
             insertAtNode.insertItem(index, insertItem);                  
-            // Check for overflow on this node, then on parent
+            
+            // Fix overflow
+            fixOverflow(insertAtNode);
+
         }
 
  
@@ -313,8 +316,8 @@ public class TwoFourTree
         return search(searchMe.getChild(index), findKey);
     }   
     
-    // 
-    private void overflow(TFNode node) {
+    
+    private void fixOverflow(TFNode node) {
         int index;
         Item temp;
         TFNode parent;
@@ -355,6 +358,9 @@ public class TwoFourTree
             parent.setChild(index, newNode);
             newNode.setParent(parent);
         }
+        
+        // Recursively calling fixOverflow
+        fixOverflow(node.getParent());
         
         // Make sure everything is hooked up properly
         System.out.println("Overflow: calling checkTree()");
