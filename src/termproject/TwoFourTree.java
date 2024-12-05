@@ -44,12 +44,13 @@ public class TwoFourTree
      */
     public Object findElement(Object key) {
         // Find the node that is storing the key
-        TFNode node = search(root(),key);
+        TFNode searchNode = search(root(),key);
         
         // Iterate through the keys
-        for (int i = 0; i < node.getNumItems(); i++) {
-            if (treeComp.isEqual(node.getItem(i), key)) {
-                return node.getItem(FFGTE(node, key)).element();
+        for (int i = 0; i < searchNode.getNumItems(); i++) {
+            // Test if node contains desired key
+            if (treeComp.isEqual(searchNode.getItem(i), key)) {
+                return searchNode.getItem(FFGTE(searchNode, key)).element();
             }
         }
         
@@ -62,17 +63,26 @@ public class TwoFourTree
      * @param key of object to be inserted
      * @param element to be inserted
      */
-    public void insertElement(Object key, Object element) {
-        
+    public void insertElement(Object key, Object element) {        
         TFNode insertAtNode = search(root(), key);
-
+        Item insertItem = new Item(key, element);     
+        int index;
  
         // Remember: insert always happens at the leaves,
         // and new nodes grow at the top
         
         // Case 1: We do not find key/we find the key at a node
+        if (insertAtNode.getChild(0) == null) {
+            // Insert
+            index = FFGTE(insertAtNode, key);        
+            insertAtNode.insertItem(index, insertItem);                  
+            // Check for overflow on this node, then on parent
+        }
+
  
-        // Case 2: find key at internal node
+        // Case 2: find key at internal node, i.e., duplicate
+            // Move to inorder successor location and insert there
+            // Check that node for overflow
         
 
         // DO NOT call FFGTE if there are duplicates
@@ -301,6 +311,54 @@ public class TwoFourTree
         
         // Recursively call search on child
         return search(searchMe.getChild(index), findKey);
+    }   
+    
+    // 
+    private void overflow(TFNode node) {
+        int index;
+        Item temp;
+        TFNode parent;
+        TFNode newNode = new TFNode();
+        
+        // If there is no overflow, return
+        if (node.getNumItems() <= node.getMaxItems()) {
+            return;
+        }
+        
+        // Special case: overflow at root
+        if (node == root()) {
+            // Remove overflow item (at final index)
+            temp = node.removeItem(node.getMaxItems());
+            // Initialize newNode
+            newNode.addItem(0, temp);
+            // Fix pointers
+            newNode.setChild(0, root());
+            node.setParent(newNode);
+            setRoot(newNode);
+        }
+        
+        if (node.getNumItems() == node.getMaxItems()) {
+            index = whatChildIsThis(node);
+            parent = node.getParent();
+            
+            // Non-shifting remove
+            temp = node.deleteItem(2);
+            // Shifting add (Read comment on children pointers in function)
+            parent.insertItem(index, temp);
+            
+            // Item at index 3 into new sibling node
+            temp = node.deleteItem(3);            
+            newNode.addItem(0, temp);
+            
+            // Fix pointers
+            index = whatChildIsThis(newNode);
+            parent.setChild(index, newNode);
+            newNode.setParent(parent);
+        }
+        
+        // Make sure everything is hooked up properly
+        System.out.println("Overflow: calling checkTree()");
+        checkTree();
     }
     
 }
