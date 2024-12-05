@@ -46,6 +46,10 @@ public class TwoFourTree
         // Find the node that is storing the key
         TFNode node = search(root(),key);
         
+        if (node == null) {
+            throw new UnsuccessfulSearchException("Unable to find key");
+        }
+        
         // Return the element from the Item in the node
         return node.getItem(FFGTE(node, key)).element();
     }
@@ -56,6 +60,25 @@ public class TwoFourTree
      * @param element to be inserted
      */
     public void insertElement(Object key, Object element) {
+        TFNode insertAtNode;
+        
+        try {
+            insertAtNode= search(root(), key);
+        }
+        
+        catch (UnsuccessfulSearchException e) {
+            // insert
+        }
+        // Remember: insert always happens at the leaves,
+        // and new nodes grow at the top
+        
+        // Case 1: We do not find key/we find the key at a node
+ 
+        // Case 2: find key at internal node
+        
+
+        // DO NOT call FFGTE if there are duplicates
+        // Instead, call whatChildIsThis
         
         
     }
@@ -275,7 +298,7 @@ public class TwoFourTree
 
         // If no children, key does not exist
         if (searchMe.getNumItems() == 0) {
-            throw new UnsuccessfulSearchException("Unable to find key");
+            return null;
         }
         
         // Recursively call search on child
