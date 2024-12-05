@@ -71,6 +71,8 @@ public class TwoFourTree
      * @param element to be inserted
      */
     public void insertElement(Object key, Object element) {
+        
+        
     }
 
     /**
@@ -274,6 +276,24 @@ public class TwoFourTree
         }
         // Uncertain what to actually return
         return -1;
+    }
+    
+    private TFNode search(TFNode searchMe, Object findKey) {   
+        // SearchMe and know me, O God
+        int index = FFGTE(searchMe, findKey);
+        
+        // If index == findKey, we are done
+        if (treeComp.isEqual(searchMe.getItem(index), findKey)) {
+            return searchMe;
+        }
+
+        // If no children, key does not exist
+        if (searchMe.getNumItems() == 0) {
+            throw new UnsuccessfulSearchException("Unable to find key");
+        }
+        
+        // Recursively call search on child
+        return search(searchMe.getChild(index), findKey);
     }
     
 }
