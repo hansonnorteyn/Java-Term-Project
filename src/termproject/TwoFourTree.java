@@ -8,6 +8,16 @@ package termproject;
  * @author
  * @version 1.0
  */
+
+
+/* 
+TODO:
+* Insert: Second case
+* Delete: Just everything
+
+
+*/
+
 public class TwoFourTree
         implements Dictionary {
 
@@ -63,35 +73,34 @@ public class TwoFourTree
      * @param key of object to be inserted
      * @param element to be inserted
      */
-    public void insertElement(Object key, Object element) {        
-        TFNode insertAtNode = search(root(), key);
+    public void insertElement(Object key, Object element) {      
+        TFNode insertAtNode;
         Item insertItem = new Item(key, element);     
-        int index;
- 
-        // Remember: insert always happens at the leaves,
-        // and new nodes grow at the top
+        //int index;
         
-        // Case 1: We do not find key/we find the key at a node
-        if (insertAtNode.getChild(0) == null) {
-            // Insert
-            index = FFGTE(insertAtNode, key);        
-            insertAtNode.insertItem(index, insertItem);                  
-            
-            // Fix overflow
-            fixOverflow(insertAtNode);
-
+        // Special case: tree is empty
+        if (root() == null) {
+            insertAtNode = new TFNode();
+            insertAtNode.addItem(0, insertItem);
+            setRoot(insertAtNode);
+        }            
+        
+        insertAtNode = search(root(), key);                
+                
+        // If key is at internal node, there are duplicates
+        // Move to In-Order successor 
+        if (insertAtNode.getChild(0) != null) {
+            insertAtNode = getNOrderSuccessor(insertAtNode);           
         }
-
- 
-        // Case 2: find key at internal node, i.e., duplicate
-            // Move to inorder successor location and insert there
-            // Check that node for overflow
+           
+        // Find the index at which insert happens
+        //index = FFGTE(insertAtNode, key);
         
-
-        // DO NOT call FFGTE if there are duplicates
-        // Instead, call whatChildIsThis
+        // Insert
+        insertAtNode.insertItem(FFGTE(insertAtNode, key), insertItem);  
         
-        
+        // Fix overflow
+        fixOverflow(insertAtNode);        
     }
 
     /**
@@ -295,6 +304,7 @@ public class TwoFourTree
         }
         // Uncertain what to actually return
         return -1;
+        //throw new UnsuccessfulSearchException("Not a child");
     }
     
     // Returns the node that contains the FFGTE
@@ -341,6 +351,7 @@ public class TwoFourTree
         }
         
         if (node.getNumItems() == node.getMaxItems()) {
+            // DO NOT use FFGTE(). Use whatChildIsThis()
             index = whatChildIsThis(node);
             parent = node.getParent();
             
@@ -365,6 +376,24 @@ public class TwoFourTree
         // Make sure everything is hooked up properly
         System.out.println("Overflow: calling checkTree()");
         checkTree();
+    }
+    
+    private TFNode getNOrderSuccessor(TFNode node) {
+        int childIndex = whatChildIsThis(node);
+        //TFNode returnNode;
+                
+        // Go to right sibling unless node is the right sibling
+        // FIXME is it guarantee to be null?
+        if ((node.getParent().getChild(childIndex + 1)) != null) {
+            node = node.getParent().getChild(childIndex + 1);
+        }
+                
+        // Walk down the left nodes
+        while (node.getChild(0) != null) {
+            node = node.getChild(0);
+        }
+
+        return node;
     }
     
 }
