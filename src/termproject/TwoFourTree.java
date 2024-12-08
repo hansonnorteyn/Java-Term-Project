@@ -14,8 +14,7 @@ package termproject;
 TODO:
 * Insert: Second case
 * Delete: Just everything
-
-
+* Check: are children nulled? ->  YES
 */
 
 public class TwoFourTree
@@ -76,7 +75,6 @@ public class TwoFourTree
     public void insertElement(Object key, Object element) {      
         TFNode insertAtNode;
         Item insertItem = new Item(key, element);     
-        //int index;
         
         // Special case: tree is empty
         if (root() == null) {
@@ -85,19 +83,21 @@ public class TwoFourTree
             setRoot(insertAtNode);
         }            
         
-        insertAtNode = search(root(), key);                
-                
-        // If key is at internal node, there are duplicates
-        // Move to In-Order successor 
-        if (insertAtNode.getChild(0) != null) {
-            insertAtNode = getNOrderSuccessor(insertAtNode);           
-        }
-           
-        // Find the index at which insert happens
-        //index = FFGTE(insertAtNode, key);
+        else {
+            insertAtNode = search(root(), key);     
+            
+            // If key is at internal node, there are duplicates
+            // Move to In-Order successor 
+            if (insertAtNode.getChild(0) != null) {
+                insertAtNode = getNOrderSuccessor(insertAtNode);           
+            }
+
+            // Insert at index FFGTE
+            insertAtNode.insertItem(FFGTE(insertAtNode, key), insertItem);  
+        }                                          
         
-        // Insert
-        insertAtNode.insertItem(FFGTE(insertAtNode, key), insertItem);  
+        //printAllElements();
+
         
         // Fix overflow
         fixOverflow(insertAtNode);        
@@ -120,61 +120,112 @@ public class TwoFourTree
 
         Integer myInt1 = 47;
         myTree.insertElement(myInt1, myInt1);
+        
         Integer myInt2 = 83;
         myTree.insertElement(myInt2, myInt2);
+        
         Integer myInt3 = 22;
         myTree.insertElement(myInt3, myInt3);
+        
+        myTree.printAllElements();
+        System.out.println("");
 
         Integer myInt4 = 16;
         myTree.insertElement(myInt4, myInt4);
+        
+        myTree.printAllElements();
+        System.out.println("");
 
         Integer myInt5 = 49;
         myTree.insertElement(myInt5, myInt5);
+        
+        myTree.printAllElements();
+        System.out.println("");
 
         Integer myInt6 = 100;
         myTree.insertElement(myInt6, myInt6);
+        
+        myTree.printAllElements();
+        System.out.println("");
 
         Integer myInt7 = 38;
         myTree.insertElement(myInt7, myInt7);
 
+        myTree.printAllElements();
+        System.out.println("");
+        
         Integer myInt8 = 3;
         myTree.insertElement(myInt8, myInt8);
+        
+        myTree.printAllElements();
+        System.out.println("");
 
         Integer myInt9 = 53;
         myTree.insertElement(myInt9, myInt9);
+        
+        myTree.printAllElements();
+        System.out.println("");
 
         Integer myInt10 = 66;
         myTree.insertElement(myInt10, myInt10);
+        
+        myTree.printAllElements();
+        System.out.println("");
 
         Integer myInt11 = 19;
         myTree.insertElement(myInt11, myInt11);
+        
+        myTree.printAllElements();
+        System.out.println("");
 
         Integer myInt12 = 23;
         myTree.insertElement(myInt12, myInt12);
+        
+        myTree.printAllElements();
+        System.out.println("");
 
         Integer myInt13 = 24;
         myTree.insertElement(myInt13, myInt13);
+        
+        myTree.printAllElements();
+        System.out.println("");
 
         Integer myInt14 = 88;
         myTree.insertElement(myInt14, myInt14);
+        
+        myTree.printAllElements();
+        System.out.println("");
 
         Integer myInt15 = 1;
         myTree.insertElement(myInt15, myInt15);
+        
+        myTree.printAllElements();
+        System.out.println("");
 
         Integer myInt16 = 97;
         myTree.insertElement(myInt16, myInt16);
+        
+        myTree.printAllElements();
+        System.out.println("");
 
         Integer myInt17 = 94;
         myTree.insertElement(myInt17, myInt17);
+        
+        myTree.printAllElements();
+        System.out.println("");
 
         Integer myInt18 = 35;
         myTree.insertElement(myInt18, myInt18);
+        
+        myTree.printAllElements();
+        System.out.println("");
 
         Integer myInt19 = 51;
         myTree.insertElement(myInt19, myInt19);
-
+        
         myTree.printAllElements();
         System.out.println("done");
+        
 
         myTree = new TwoFourTree(myComp);
         final int TEST_SIZE = 10000;
@@ -182,7 +233,7 @@ public class TwoFourTree
 
         for (int i = 0; i < TEST_SIZE; i++) {
             myTree.insertElement(i, i);
-            //          myTree.printAllElements();
+            //       myTree.printAllElements();
             //         myTree.checkTree();
         }
         System.out.println("removing");
@@ -288,8 +339,11 @@ public class TwoFourTree
     // Find First Greater Than Or Equal 
     private int FFGTE(TFNode node, Object key) {
         int i;
+                
         for (i = 0; i < node.getNumItems(); i++) {
-            if (treeComp.isGreaterThanOrEqualTo(node.getItem(i), key));
+            if (treeComp.isGreaterThanOrEqualTo(node.getItem(i).element(), key)) {
+                break;
+            }
         }        
         return i;
     }
@@ -309,29 +363,35 @@ public class TwoFourTree
     
     // Returns the node that contains the FFGTE
     private TFNode search(TFNode searchMe, Object findKey) {   
-        // SearchMe and know me, O God
-        int index = FFGTE(searchMe, findKey);
-        
-        // If index == findKey, we are done
-        if (treeComp.isEqual(searchMe.getItem(index), findKey)) {
+        // Child is null -> unsuccessful search
+        // Return the final node we searched
+        if (searchMe.getChild(0) == null) {
             return searchMe;
-        }
+        }              
 
-        // If no children, key does not exist
-        if (searchMe.getNumItems() == 0) {
+        // SearchMe and know me, O God
+        int index = FFGTE(searchMe, findKey);        
+        
+        if (index == searchMe.getNumItems()) {
+            return search(searchMe.getChild(index), findKey);
+        }
+        
+        // Base Case 1: key at index == findKey
+        // Return node        
+        else if (treeComp.isEqual(searchMe.getItem(index).element(), findKey)) {
             return searchMe;
         }
         
         // Recursively call search on child
         return search(searchMe.getChild(index), findKey);
     }   
-    
-    
+        
     private void fixOverflow(TFNode node) {
         int index;
         Item temp;
         TFNode parent;
         TFNode newNode = new TFNode();
+        
         
         // If there is no overflow, return
         if (node.getNumItems() <= node.getMaxItems()) {
@@ -340,50 +400,29 @@ public class TwoFourTree
         
         // Special case: overflow at root
         if (node == root()) {
-            // Remove overflow item (at final index)
-            temp = node.removeItem(node.getMaxItems());
-            // Initialize newNode
-            newNode.addItem(0, temp);
-            // Fix pointers
-            newNode.setChild(0, root());
-            node.setParent(newNode);
-            setRoot(newNode);
+            TFNode newRoot = new TFNode();
+            
+            // Set new root
+            newRoot.setChild(0, root());            
+            setRoot(newRoot);
+            node.setParent(newRoot);
         }
+
+        splitNode(node);
+
         
-        if (node.getNumItems() == node.getMaxItems()) {
-            // DO NOT use FFGTE(). Use whatChildIsThis()
-            index = whatChildIsThis(node);
-            parent = node.getParent();
-            
-            // Non-shifting remove
-            temp = node.deleteItem(2);
-            // Shifting add (Read comment on children pointers in function)
-            parent.insertItem(index, temp);
-            
-            // Item at index 3 into new sibling node
-            temp = node.deleteItem(3);            
-            newNode.addItem(0, temp);
-            
-            // Fix pointers
-            index = whatChildIsThis(newNode);
-            parent.setChild(index, newNode);
-            newNode.setParent(parent);
-        }
-        
-        // Recursively calling fixOverflow
+        // Recursively call fixOverflow
         fixOverflow(node.getParent());
         
         // Make sure everything is hooked up properly
-        System.out.println("Overflow: calling checkTree()");
+        //System.out.println("fixOverflow: calling checkTree()");
         checkTree();
     }
     
     private TFNode getNOrderSuccessor(TFNode node) {
         int childIndex = whatChildIsThis(node);
-        //TFNode returnNode;
                 
         // Go to right sibling unless node is the right sibling
-        // FIXME is it guarantee to be null?
         if ((node.getParent().getChild(childIndex + 1)) != null) {
             node = node.getParent().getChild(childIndex + 1);
         }
@@ -394,6 +433,45 @@ public class TwoFourTree
         }
 
         return node;
+    }
+
+    
+    private void splitNode(TFNode node) {
+        TFNode newNode = new TFNode();
+        TFNode parent = node.getParent();
+        TFNode newNodeLChild;
+        TFNode newNodeRChild;
+        Item temp;
+        int index = whatChildIsThis(node);
+        
+        // Temporarily store children        
+        newNodeLChild = node.getChild(3);
+        newNodeRChild = node.getChild(4);        
+        
+        // Item at index 3 
+        temp = node.deleteItem(3);    
+        // Put into new sibling node
+        newNode.addItem(0, temp);
+        
+        // Item at index 2
+        temp = node.deleteItem(2);
+        // Shifting add to the parent
+        parent.insertItem(index, temp);
+                    
+        // Index is the one after the original node
+        index = 1 + whatChildIsThis(node);      
+        
+        // Fix pointers     
+        parent.setChild(index, newNode);
+        newNode.setParent(parent);
+        if (newNodeLChild != null) {
+            newNode.setChild(0, newNodeLChild);
+            newNode.setChild(1, newNodeRChild);
+            newNodeLChild.setParent(newNode);
+            newNodeRChild.setParent(newNode);
+        }
+        
+        
     }
     
 }
