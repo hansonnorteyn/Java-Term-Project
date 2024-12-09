@@ -11,10 +11,8 @@ package termproject;
 
 
 /* 
-TODO:
-* Insert: Second case
+TODO
 * Delete: Just everything
-* Check: are children nulled? ->  YES
 */
 
 public class TwoFourTree
@@ -54,17 +52,14 @@ public class TwoFourTree
     public Object findElement(Object key) {
         // Find the node that is storing the key
         TFNode searchNode = search(root(),key);
-        
-        // Iterate through the keys
-        for (int i = 0; i < searchNode.getNumItems(); i++) {
-            // Test if node contains desired key
-            if (treeComp.isEqual(searchNode.getItem(i), key)) {
-                return searchNode.getItem(FFGTE(searchNode, key)).element();
-            }
-        }
+        int index = FFGTE(searchNode, key); 
         
         // If key not found, throw exception
-        throw new UnsuccessfulSearchException("Key not found");                
+        if (!(treeComp.isEqual(searchNode.getItem(index), key))) {
+            throw new ElementNotFoundException("Key not found");
+        }                      
+        
+        return searchNode.getItem(index).element();        
     }
 
     /**
@@ -89,18 +84,18 @@ public class TwoFourTree
             // If key is at internal node, there are duplicates
             // Move to In-Order successor 
             if (insertAtNode.getChild(0) != null) {
-                insertAtNode = getNOrderSuccessor(insertAtNode);           
+                insertAtNode = getInOrderSuccessor(insertAtNode);           
             }
 
             // Insert at index FFGTE
             insertAtNode.insertItem(FFGTE(insertAtNode, key), insertItem);  
-        }                                          
-        
-        //printAllElements();
-
+        }
         
         // Fix overflow
         fixOverflow(insertAtNode);        
+        
+        // Increment size
+        size++;
     }
 
     /**
@@ -111,7 +106,50 @@ public class TwoFourTree
      * @exception ElementNotFoundException if the key is not in dictionary
      */
     public Object removeElement(Object key) throws ElementNotFoundException {
-        return null;
+        // Find the node that is storing the key
+        TFNode searchNode = search(root(),key);
+        TFNode inOrderNode;
+        Item inOrderItem;
+        int index = FFGTE(searchNode, key); 
+        Object returnElement;
+
+        // Case 1: Key not found
+        if (!(treeComp.isEqual(searchNode.getItem(index), key))) {
+            throw new ElementNotFoundException("Key not found");
+        }   
+                   
+        // Temporarily store element
+        returnElement = searchNode.getItem(index).element();
+        
+        // Case 2: Node is external
+        if (searchNode.getChild(0) == null) {            
+            // Remove item 
+            searchNode.removeItem(index);
+        
+            // Fix underflow
+            fixUnderflow(searchNode);
+        }
+        
+        // Special case: Node is root
+        
+        // Case 3: Node is internal
+        else {                          
+            // Get key 0 from inorder node
+            inOrderNode = getInOrderSuccessor(searchNode);
+            inOrderItem = inOrderNode.removeItem(0);
+            
+            // Replce item with the item 0 from in order successor
+            searchNode.addItem(index, inOrderItem);
+                                
+            // Call fixUnderflow on inorder successor
+            fixUnderflow(inOrderNode);
+        }
+                        
+        // Decrement size
+        size--;
+        
+        // Return element
+        return returnElement;
     }
 
     public static void main(String[] args) {
@@ -368,15 +406,15 @@ public class TwoFourTree
         if (searchMe.getChild(0) == null) {
             return searchMe;
         }              
-
-        // SearchMe and know me, O God
+        
+        // FFGTE item in node
         int index = FFGTE(searchMe, findKey);        
         
         if (index == searchMe.getNumItems()) {
             return search(searchMe.getChild(index), findKey);
         }
         
-        // Base Case 1: key at index == findKey
+        // If key at index == findKey, return node
         // Return node        
         else if (treeComp.isEqual(searchMe.getItem(index).element(), findKey)) {
             return searchMe;
@@ -409,17 +447,15 @@ public class TwoFourTree
         }
 
         splitNode(node);
-
         
         // Recursively call fixOverflow
         fixOverflow(node.getParent());
         
         // Make sure everything is hooked up properly
-        //System.out.println("fixOverflow: calling checkTree()");
         checkTree();
     }
     
-    private TFNode getNOrderSuccessor(TFNode node) {
+    private TFNode getInOrderSuccessor(TFNode node) {
         int childIndex = whatChildIsThis(node);
                 
         // Go to right sibling unless node is the right sibling
@@ -434,7 +470,6 @@ public class TwoFourTree
 
         return node;
     }
-
     
     private void splitNode(TFNode node) {
         TFNode newNode = new TFNode();
@@ -472,6 +507,83 @@ public class TwoFourTree
         }
         
         
+    }
+    
+    private void fixUnderflow(TFNode node) {
+        if (node.getNumItems() != 0) {
+            return;
+        }
+        
+        // Left Transfer 
+        // If node has left sib and left sib has >1 items:
+        if (hasLeftSib(node) && getLeftSib(node).getNumItems() > 1) {
+            
+        }
+        
+        // Right Transfer
+        // If node has right sib and right sib has >1 items:
+        else if (hasRightSib(node) && getRightSib(node).getNumItems() > 1) {
+            
+        }
+        
+        // Left Fusion
+        // If node has left sib:
+        else if (hasLeftSib(node)) {
+            
+        }
+        
+        // Right Fusion
+        // else
+        else {
+            
+        }
+        
+        
+        // Recursively call fixUnderflow
+        if (node != root()) {
+            fixUnderflow(node.getParent());
+        }
+        
+    }
+    
+    private void leftTransfer(TFNode node) {
+        // Shifting insert
+        // Non-shifting delete
+        // Replacement of parent
+    }
+    
+    private void rightTransfer(TFNode node) {
+        // Non-shifting add
+        // Shifting remove
+        // Replacement of parent
+    }
+    
+    private void leftFusion(TFNode node) {
+        // Shifting remove
+        // save pointer to child
+    }
+    
+    private void rightFusion(TFNode node) {
+        
+    }
+    
+    private boolean hasLeftSib(TFNode node) {
+        return !(node == root() || whatChildIsThis(node) == 0);
+    }
+    
+    private boolean hasRightSib(TFNode node) {
+        return !(node == root() || 
+                whatChildIsThis(node) == node.getParent().getNumItems() - 1);
+    }
+    
+    private TFNode getLeftSib(TFNode node) {
+        int index = whatChildIsThis(node);
+        return node.getParent().getChild(index - 1);
+    }
+    
+    private TFNode getRightSib(TFNode node) {
+        int index = whatChildIsThis(node);
+        return node.getParent().getChild(index + 1);
     }
     
 }
