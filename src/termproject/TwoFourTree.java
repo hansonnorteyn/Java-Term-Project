@@ -107,43 +107,42 @@ public class TwoFourTree
      */
     public Object removeElement(Object key) throws ElementNotFoundException {
         // Find the node that is storing the key
-        TFNode searchNode = search(root(),key);
+        TFNode node = search(root(),key);
         TFNode inOrderNode;
         Item inOrderItem;
-        int index = FFGTE(searchNode, key); 
+        int index = FFGTE(node, key); 
         Object returnElement;
 
         // Case 1: Key not found
-        if (!(treeComp.isEqual(searchNode.getItem(index), key))) {
+        if (!(treeComp.isEqual(node.getItem(index), key))) {
             throw new ElementNotFoundException("Key not found");
         }   
                    
         // Temporarily store element
-        returnElement = searchNode.getItem(index).element();
+        returnElement = node.getItem(index).element();                
         
         // Case 2: Node is external
-        if (searchNode.getChild(0) == null) {            
+        if (node.getChild(0) == null) {
             // Remove item 
-            searchNode.removeItem(index);
+            node.removeItem(index);
         
             // Fix underflow
-            fixUnderflow(searchNode);
+            fixUnderflow(node);
         }
-        
-        // Special case: Node is root
+       
         
         // Case 3: Node is internal
-        else {                          
+        else {
             // Get key 0 from inorder node
-            inOrderNode = getInOrderSuccessor(searchNode);
+            inOrderNode = getInOrderSuccessor(node);
             inOrderItem = inOrderNode.removeItem(0);
             
             // Replce item with the item 0 from in order successor
-            searchNode.addItem(index, inOrderItem);
+            node.addItem(index, inOrderItem);
                                 
             // Call fixUnderflow on inorder successor
-            fixUnderflow(inOrderNode);
-        }
+            fixUnderflow(inOrderNode);            
+        }        
                         
         // Decrement size
         size--;
@@ -514,16 +513,25 @@ public class TwoFourTree
             return;
         }
         
+        if (node == root()) {
+        
+            // put left-most child's right-most item into root
+            // reassign node to the left child (fix-underflow purposes
+        }
+        
+        
+        
+        
         // Left Transfer 
         // If node has left sib and left sib has >1 items:
-        if (hasLeftSib(node) && getLeftSib(node).getNumItems() > 1) {
-            
+        else if (hasLeftSib(node) && getLeftSib(node).getNumItems() > 1) {
+            leftTransfer(node);
         }
         
         // Right Transfer
         // If node has right sib and right sib has >1 items:
         else if (hasRightSib(node) && getRightSib(node).getNumItems() > 1) {
-            
+            rightTransfer(node);
         }
         
         // Left Fusion
@@ -540,22 +548,64 @@ public class TwoFourTree
         
         
         // Recursively call fixUnderflow
-        if (node != root()) {
-            fixUnderflow(node.getParent());
-        }
+        fixUnderflow(node.getParent());
+        
         
     }
     
-    private void leftTransfer(TFNode node) {
+    // Transfer from left sibling
+    private void leftTransfer(TFNode node) {           
+        TFNode parent = node.getParent();
+        TFNode leftSib = getLeftSib(node);
+        TFNode reassign;
+        int nodeIndex = whatChildIsThis(node) - 1;
+        int leftNumItems = leftSib.getNumItems();
+        Item fromParent = parent.getItem(nodeIndex);
+        Item fromLeftSib;
+        
         // Shifting insert
+        node.insertItem(0, fromParent);
+        
+        // Which node to reassign to parent
+        reassign = leftSib.getChild(leftNumItems);        
+        
         // Non-shifting delete
-        // Replacement of parent
+        fromLeftSib = leftSib.deleteItem(leftNumItems - 1);
+        // Add item to parent
+        parent.addItem(nodeIndex, fromLeftSib);
+        
+        // Reassign parent
+        reassign.setParent(node);
+        
+        // Add child
+        node.setChild(0, reassign);
     }
     
     private void rightTransfer(TFNode node) {
+        TFNode parent = node.getParent();
+        TFNode rightSib = getRightSib(node);
+        TFNode reassign;
+        int nodeIndex = whatChildIsThis(node) - 1;        
+        Item fromParent = parent.getItem(nodeIndex);
+        Item fromRightSib;
+        
         // Non-shifting add
+        node.addItem(0, fromParent);
+        
+        // Store child
+        reassign = rightSib.getChild(0);
+        
         // Shifting remove
+        fromRightSib = rightSib.removeItem(0);
+        
+        // Add item to parent
+        parent.addItem(nodeIndex, fromRightSib);
+        
         // Replacement of parent
+        reassign.setParent(node);
+        
+        // Add child
+        node.setChild(1, reassign);
     }
     
     private void leftFusion(TFNode node) {
